@@ -9,9 +9,13 @@ import (
 	"github.com/btcsuite/btcutil/bech32"
 )
 
+// B32AllowedChars is the set of allowed characters for base32 encoding.
+var B32AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+
 // PubKey represents a public key in NPUB string format.
 type PubKey string
 
+// String() converts the PubKey to a string.
 func (p PubKey) String() string {
 	return string(p)
 }
@@ -29,10 +33,14 @@ func (p PubKey) ToHex() string {
 		slog.Error("Invalid npub bech32 string", "hrd", hrd)
 		return ""
 	}
-	// Convert the decoded byte array to a string
-	hexData := string(data)
+	var allowedCharsDataString string
+	// Build the string from allowed character indexes
+	for i := range data {
+		// Convert the byte to a character
+		allowedCharsDataString += string(B32AllowedChars[data[i]])
+	}
 	// Decode this string from base32
-	decodedData, err := base32.StdEncoding.WithPadding(base32.StdPadding).DecodeString(hexData)
+	decodedData, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(allowedCharsDataString)
 	if err != nil {
 		slog.Error("Failed to decode base32 string with padding", "error", err)
 		return ""
