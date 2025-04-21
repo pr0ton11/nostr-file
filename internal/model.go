@@ -20,10 +20,19 @@ func (p PubKey) String() string {
 	return string(p)
 }
 
+// Returns a new PubKey from a hex string.
+// Automatically converts the npub string to hex format.
+func NewPubKey(key string) PubKey {
+	if strings.HasPrefix(key, "npub") {
+		key = NPubKeyToHex(key)
+	}
+	return PubKey(key)
+}
+
 // ToHex converts the NPUB string to a hex-encoded string.
-func (p PubKey) ToHex() string {
+func NPubKeyToHex(NPubKey string) string {
 	// Convert the bech32 string to a byte array
-	hrd, data, err := bech32.Decode(p.String())
+	hrd, data, err := bech32.Decode(NPubKey)
 	if err != nil {
 		slog.Error("Failed to decode npub bech32 string", "error", err)
 		return ""
@@ -53,5 +62,5 @@ func (p PubKey) ToHex() string {
 
 // Invite represents an invitation to allow a user to join the file service
 type Invite struct {
-	Pubkey PubKey `json:"pubkey"`
+	Pubkey PubKey `json:"pubkey"` // Public key of the user in hex format
 }
