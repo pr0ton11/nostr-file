@@ -1,4 +1,4 @@
-package internal
+package main
 
 // ContentType is a map of file extensions to their corresponding MIME types.
 var ContentType = map[string]string{
