@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"strconv"
 
 	"github.com/btcsuite/btcd/btcec/v2"
@@ -130,12 +131,20 @@ func serializeEventInto(e *Event, result []byte) []byte {
 func (e Event) ValidateNIP98Event(uri string, method string) bool {
 	// Check if the kind of the event is 27235
 	if e.Kind != 27235 {
+		slog.Error("Event is not a NIP98 event", "kind", e.Kind)
 		return false
 	}
 	// Check if the created at timestamp is within the last 60 seconds
 	if e.CreatedAt < nostr.Now()-60 {
+		slog.Error("Event is too old", "created_at", e.CreatedAt, "now", nostr.Now())
 		return false
 	}
+
+	// Content should be empty
+	if e.Content != "" {
+		slog.Debug("Event content is not empty", "content", e.Content)
+	}
+
 	// Find the mandatory tags
 	eventURISlice := e.Tags.Find("u")
 	eventMethodSlice := e.Tags.Find("method")
@@ -149,20 +158,24 @@ func (e Event) ValidateNIP98Event(uri string, method string) bool {
 	// Value is the second element of the tag
 	// Also this could be nil for some reason
 	if eventURISlice == nil || eventMethodSlice == nil {
+		slog.Error("Event does not have the mandatory tags", "tags", e.Tags)
 		return false
 	}
 	// Do another check to make sure the slices have the right length
 	// Assumed to be 2 for key and value
 	if len(eventURISlice) != 2 || len(eventMethodSlice) != 2 {
+		slog.Error("Event does not have the mandatory tags", "tags", e.Tags)
 		return false
 	}
 
 	// Ensure that the signature is valid
 	valid, err := e.ValidateSignature()
 	if err != nil || !valid {
+		slog.Error("Event signature is invalid", "error", err)
 		return false
 	}
 
 	// This event is a valid NIP98 event
+	slog.Debug("Event is a valid NIP98 event", "uri", eventURISlice[1], "method", eventMethodSlice[1])
 	return true
 }
