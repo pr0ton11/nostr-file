@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestPublicKeyHex32Conversion tests the conversion of NPUB keys to hex format.
 func TestPublicKeyHex32Conversion(t *testing.T) {
 	tests := []struct {
 		name     string
